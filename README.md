@@ -10,7 +10,7 @@ SwissMap exposes the same interface as the built-in `map`. Give it a try using t
 ```go
 package main
 
-import "github.com/dolthub/swiss"
+import "github.com/jtarchie/swiss"
 
 func main() {
 	m := swiss.NewMap[string, int](42)
