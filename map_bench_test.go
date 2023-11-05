@@ -60,7 +60,7 @@ func TestMemoryFootprint(t *testing.T) {
 	for n := 10; n <= 10_000; n += 10 {
 		b1 := testing.Benchmark(func(b *testing.B) {
 			// max load factor 7/8
-			m := NewMap[int, int](uint32(n))
+			m := NewMap[int, int](uint64(n))
 			require.NotNil(b, m)
 		})
 		b2 := testing.Benchmark(func(b *testing.B) {
@@ -92,9 +92,9 @@ func benchmarkRuntimeMap[K comparable](b *testing.B, keys []K) {
 }
 
 func benchmarkSwissMap[K comparable](b *testing.B, keys []K) {
-	n := uint32(len(keys))
+	n := uint64(len(keys))
 	mod := n - 1 // power of 2 fast modulus
-	require.Equal(b, 1, bits.OnesCount32(n))
+	require.Equal(b, 1, bits.OnesCount64(n))
 	m := NewMap[K, K](n)
 	for _, k := range keys {
 		m.Put(k, k)
@@ -102,7 +102,7 @@ func benchmarkSwissMap[K comparable](b *testing.B, keys []K) {
 	b.ResetTimer()
 	var ok bool
 	for i := 0; i < b.N; i++ {
-		_, ok = m.Get(keys[uint32(i)&mod])
+		_, ok = m.Get(keys[uint64(i)&mod])
 	}
 	assert.True(b, ok)
 	b.ReportAllocs()

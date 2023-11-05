@@ -133,7 +133,7 @@ func genUint32Data(count int) (keys []uint32) {
 }
 
 func testMapPut[K comparable](t *testing.T, keys []K) {
-	m := NewMap[K, int](uint32(len(keys)))
+	m := NewMap[K, int](uint64(len(keys)))
 	assert.Equal(t, 0, m.Count())
 	for i, key := range keys {
 		m.Put(key, i)
@@ -153,7 +153,7 @@ func testMapPut[K comparable](t *testing.T, keys []K) {
 }
 
 func testMapHas[K comparable](t *testing.T, keys []K) {
-	m := NewMap[K, int](uint32(len(keys)))
+	m := NewMap[K, int](uint64(len(keys)))
 	for i, key := range keys {
 		m.Put(key, i)
 	}
@@ -164,7 +164,7 @@ func testMapHas[K comparable](t *testing.T, keys []K) {
 }
 
 func testMapGet[K comparable](t *testing.T, keys []K) {
-	m := NewMap[K, int](uint32(len(keys)))
+	m := NewMap[K, int](uint64(len(keys)))
 	for i, key := range keys {
 		m.Put(key, i)
 	}
@@ -176,7 +176,7 @@ func testMapGet[K comparable](t *testing.T, keys []K) {
 }
 
 func testMapDelete[K comparable](t *testing.T, keys []K) {
-	m := NewMap[K, int](uint32(len(keys)))
+	m := NewMap[K, int](uint64(len(keys)))
 	assert.Equal(t, 0, m.Count())
 	for i, key := range keys {
 		m.Put(key, i)
@@ -228,7 +228,7 @@ func testMapClear[K comparable](t *testing.T, keys []K) {
 }
 
 func testMapIter[K comparable](t *testing.T, keys []K) {
-	m := NewMap[K, int](uint32(len(keys)))
+	m := NewMap[K, int](uint64(len(keys)))
 	for i, key := range keys {
 		m.Put(key, i)
 	}
@@ -266,7 +266,7 @@ func testMapIter[K comparable](t *testing.T, keys []K) {
 }
 
 func testMapGrow[K comparable](t *testing.T, keys []K) {
-	n := uint32(len(keys))
+	n := uint64(len(keys))
 	m := NewMap[K, int](n / 10)
 	for i, key := range keys {
 		m.Put(key, i)
@@ -281,7 +281,7 @@ func testMapGrow[K comparable](t *testing.T, keys []K) {
 func testSwissMapCapacity[K comparable](t *testing.T, gen func(n int) []K) {
 	// Capacity() behavior depends on |groupSize|
 	// which varies by processor architecture.
-	caps := []uint32{
+	caps := []uint64{
 		1 * maxAvgGroupLoad,
 		2 * maxAvgGroupLoad,
 		3 * maxAvgGroupLoad,
@@ -306,7 +306,7 @@ func testSwissMapCapacity[K comparable](t *testing.T, gen func(n int) []K) {
 
 func testProbeStats[K comparable](t *testing.T, keys []K) {
 	runTest := func(load float32) {
-		n := uint32(len(keys))
+		n := uint64(len(keys))
 		sz, k := loadFactorSample(n, load)
 		m := NewMap[K, int](sz)
 		for i, key := range keys[:k] {
@@ -329,13 +329,13 @@ func testProbeStats[K comparable](t *testing.T, keys []K) {
 
 // calculates the sample size and map size necessary to
 // create a load factor of |load| given |n| data points
-func loadFactorSample(n uint32, targetLoad float32) (mapSz, sampleSz uint32) {
+func loadFactorSample(n uint64, targetLoad float32) (mapSz, sampleSz uint64) {
 	if targetLoad > maxLoadFactor {
 		targetLoad = maxLoadFactor
 	}
 	// tables are assumed to be power of two
-	sampleSz = uint32(float32(n) * targetLoad)
-	mapSz = uint32(float32(n) * maxLoadFactor)
+	sampleSz = uint64(float32(n) * targetLoad)
+	mapSz = uint64(float32(n) * maxLoadFactor)
 	return
 }
 
@@ -427,8 +427,8 @@ func TestNumGroups(t *testing.T) {
 	assert.Equal(t, expected(57), numGroups(57))
 }
 
-func expected(x int) (groups uint32) {
-	groups = uint32(math.Ceil(float64(x) / float64(maxAvgGroupLoad)))
+func expected(x int) (groups uint64) {
+	groups = uint64(math.Ceil(float64(x) / float64(maxAvgGroupLoad)))
 	if groups == 0 {
 		groups = 1
 	}

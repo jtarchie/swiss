@@ -28,9 +28,9 @@ type Map[K comparable, V any] struct {
 	ctrl     []metadata
 	groups   []group[K, V]
 	hash     maphash.Hasher[K]
-	resident uint32
-	dead     uint32
-	limit    uint32
+	resident uint64
+	dead     uint64
+	limit    uint64
 }
 
 // metadata is the h2 metadata array for a group.
@@ -58,7 +58,7 @@ type h1 uint64
 type h2 int8
 
 // NewMap constructs a Map.
-func NewMap[K comparable, V any](sz uint32) (m *Map[K, V]) {
+func NewMap[K comparable, V any](sz uint64) (m *Map[K, V]) {
 	groups := numGroups(sz)
 	m = &Map[K, V]{
 		ctrl:   make([]metadata, groups),
@@ -290,15 +290,15 @@ func (m *Map[K, V]) find(key K, hi h1, lo h2) (g, s uint32, ok bool) {
 	}
 }
 
-func (m *Map[K, V]) nextSize() (n uint32) {
-	n = uint32(len(m.groups)) * 2
+func (m *Map[K, V]) nextSize() (n uint64) {
+	n = uint64(len(m.groups)) * 2
 	if m.dead >= (m.resident / 2) {
-		n = uint32(len(m.groups))
+		n = uint64(len(m.groups))
 	}
 	return
 }
 
-func (m *Map[K, V]) rehash(n uint32) {
+func (m *Map[K, V]) rehash(n uint64) {
 	groups, ctrl := m.groups, m.ctrl
 	m.groups = make([]group[K, V], n)
 	m.ctrl = make([]metadata, n)
@@ -325,7 +325,7 @@ func (m *Map[K, V]) loadFactor() float32 {
 }
 
 // numGroups returns the minimum number of groups needed to store |n| elems.
-func numGroups(n uint32) (groups uint32) {
+func numGroups(n uint64) (groups uint64) {
 	groups = (n + maxAvgGroupLoad - 1) / maxAvgGroupLoad
 	if groups == 0 {
 		groups = 1

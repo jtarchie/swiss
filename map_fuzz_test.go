@@ -36,11 +36,11 @@ func FuzzStringMap(f *testing.F) {
 	f.Add(uint8(8), 25, 1000)
 	f.Fuzz(func(t *testing.T, keySz uint8, init, count int) {
 		// smaller key sizes generate more overwrites
-		fuzzTestStringMap(t, uint32(keySz), uint32(init), uint32(count))
+		fuzzTestStringMap(t, uint64(keySz), uint64(init), uint64(count))
 	})
 }
 
-func fuzzTestStringMap(t *testing.T, keySz, init, count uint32) {
+func fuzzTestStringMap(t *testing.T, keySz, init, count uint64) {
 	const limit = 1024 * 1024
 	if count > limit || init > limit {
 		t.Skip()
