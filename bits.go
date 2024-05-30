@@ -19,6 +19,8 @@ package swiss
 import (
 	"math/bits"
 	"unsafe"
+
+	"golang.org/x/exp/constraints"
 )
 
 const (
@@ -40,7 +42,7 @@ func metaMatchEmpty(m *metadata) bitset {
 	return hasZeroByte(castUint64(m) ^ hiBits)
 }
 
-func nextMatch[S Size](b *bitset) S {
+func nextMatch[S constraints.Unsigned](b *bitset) S {
 	s := S(bits.TrailingZeros64(uint64(*b)))
 	*b &= ^(1 << s) // clear bit |s|
 	return s >> 3   // div by 8

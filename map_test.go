@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/constraints"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -339,7 +340,7 @@ func loadFactorSample(n uint32, targetLoad float32) (mapSz, sampleSz uint32) {
 	return
 }
 
-type probeStats[S Size] struct {
+type probeStats[S constraints.Unsigned] struct {
 	groups     S
 	loadFactor float32
 	presentCnt S
@@ -352,7 +353,7 @@ type probeStats[S Size] struct {
 	absentAvg  float32
 }
 
-func fmtProbeStats[S Size](s probeStats[S]) string {
+func fmtProbeStats[S constraints.Unsigned](s probeStats[S]) string {
 	g := fmt.Sprintf("groups=%d load=%f\n", s.groups, s.loadFactor)
 	p := fmt.Sprintf("present(n=%d): min=%d max=%d avg=%f\n",
 		s.presentCnt, s.presentMin, s.presentMax, s.presentAvg)
@@ -361,7 +362,7 @@ func fmtProbeStats[S Size](s probeStats[S]) string {
 	return g + p + a
 }
 
-func getProbeLength[K comparable, V any, S Size](t *testing.T, m *Map[K, V, S], key K) (length S, ok bool) {
+func getProbeLength[K comparable, V any, S constraints.Unsigned](t *testing.T, m *Map[K, V, S], key K) (length S, ok bool) {
 	var end S
 	hi, lo := splitHash(m.hash.Hash(key))
 	start := probeStart[S](hi, len(m.groups))
@@ -374,12 +375,12 @@ func getProbeLength[K comparable, V any, S Size](t *testing.T, m *Map[K, V, S], 
 	return
 }
 
-func getProbeStats[K comparable, V any, S Size](t *testing.T, m *Map[K, V, S], keys []K) (stats probeStats[S]) {
+func getProbeStats[K comparable, V any, S constraints.Unsigned](t *testing.T, m *Map[K, V, S], keys []K) (stats probeStats[S]) {
 	stats.groups = S(len(m.groups))
 	stats.loadFactor = m.loadFactor()
 	var presentSum, absentSum float32
-	stats.presentMin = math.MaxInt32
-	stats.absentMin = math.MaxInt32
+	stats.presentMin = math.MaxUint8
+	stats.absentMin = math.MaxUint8
 	for _, key := range keys {
 		l, ok := getProbeLength(t, m, key)
 		if ok {
@@ -427,7 +428,7 @@ func TestNumGroups(t *testing.T) {
 	assert.Equal(t, expected[uint32](57), numGroups[uint32](57))
 }
 
-func expected[S Size](x int) (groups S) {
+func expected[S constraints.Unsigned](x int) (groups S) {
 	groups = S(math.Ceil(float64(x) / float64(maxAvgGroupLoad)))
 	if groups == 0 {
 		groups = 1

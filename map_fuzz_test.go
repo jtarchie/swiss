@@ -19,6 +19,7 @@ import (
 	"unsafe"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/constraints"
 )
 
 func FuzzStringMap(f *testing.F) {
@@ -93,7 +94,7 @@ type hasher struct {
 	seed uintptr
 }
 
-func setConstSeed[K comparable, V any, S Size](m *Map[K, V, S], seed uintptr) {
+func setConstSeed[K comparable, V any, S constraints.Unsigned](m *Map[K, V, S], seed uintptr) {
 	h := (*hasher)((unsafe.Pointer)(&m.hash))
 	h.seed = seed
 }

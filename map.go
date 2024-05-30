@@ -16,19 +16,16 @@ package swiss
 
 import (
 	"github.com/dolthub/maphash"
+	"golang.org/x/exp/constraints"
 )
 
 const (
 	maxLoadFactor = float32(maxAvgGroupLoad) / float32(groupSize)
 )
 
-type Size interface {
-	uint32 | uint64
-}
-
 // Map is an open-addressing hash map
 // based on Abseil's flat_hash_map.
-type Map[K comparable, V any, S Size] struct {
+type Map[K comparable, V any, S constraints.Unsigned] struct {
 	ctrl     []metadata
 	groups   []group[K, V]
 	hash     maphash.Hasher[K]
@@ -71,7 +68,7 @@ func NewMap64[K comparable, V any](sz uint64) (m *Map[K, V, uint64]) {
 	return newMap[K, V, uint64](sz)
 }
 
-func newMap[K comparable, V any, S Size](sz S) (m *Map[K, V, S]) {
+func newMap[K comparable, V any, S constraints.Unsigned](sz S) (m *Map[K, V, S]) {
 	groups := numGroups(sz)
 	m = &Map[K, V, S]{
 		ctrl:   make([]metadata, groups),
@@ -338,7 +335,7 @@ func (m *Map[K, V, S]) loadFactor() float32 {
 }
 
 // numGroups returns the minimum number of groups needed to store |n| elems.
-func numGroups[S Size](n S) (groups S) {
+func numGroups[S constraints.Unsigned](n S) (groups S) {
 	groups = (n + maxAvgGroupLoad - 1) / maxAvgGroupLoad
 	if groups == 0 {
 		groups = 1
@@ -357,11 +354,11 @@ func splitHash(h uint64) (h1, h2) {
 	return h1((h & h1Mask) >> 7), h2(h & h2Mask)
 }
 
-func probeStart[S Size](hi h1, groups int) S {
+func probeStart[S constraints.Unsigned](hi h1, groups int) S {
 	return fastModN(S(hi), S(groups))
 }
 
 // lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
-func fastModN[S Size](x, n S) S {
+func fastModN[S constraints.Unsigned](x, n S) S {
 	return S((uint64(x) * uint64(n)) >> 32)
 }
